@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Secret Space</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: none;
+            box-sizing: border-box;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #0084ff;
+        }
+        .status {
+            font-size: 12px;
+            color: #888;
+            text-align: right;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Our Shared Notepad</h2>
+    <textarea id="shared-text" placeholder="Type something here... Your partner will see it instantly!"></textarea>
+    <div class="status">Connected to secret space</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+    // ⚠️ REPLACE THIS CONFIG WITH YOUR OWN FIREBASE CONFIG DETAILS
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const textRef = database.ref('sharedSpace/text');
+
+    const textarea = document.getElementById('shared-text');
+
+    // 1. Listen for real-time changes from the database
+    textRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data !== null && textarea.value !== data) {
+            // Update the textarea only if the content is different
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            textarea.value = data;
+            // Maintain cursor position so it doesn't jump
+            textarea.setSelectionRange(start, end);
+        }
+    });
+
+    // 2. Send text to the database when typing
+    textarea.addEventListener('input', (e) => {
+        const text = e.target.value;
+        textRef.set(text);
+    });
+</script>
+
+</body>
+</html>
